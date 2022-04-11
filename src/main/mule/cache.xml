@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f82614da-f0b7-4996-a18f-fe003436c8e0" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<ee:object-store-caching-strategy name="Caching" doc:name="Caching Strategy" doc:id="a670a63a-4e1e-472c-89aa-a28cb5235a20" keyGenerationExpression="#[vars.id]" />
+	<flow name="cacheFlow" doc:id="ad4a26ce-1dd2-4b38-9901-2b735bd96fd2" >
+		<http:listener doc:name="Listener" doc:id="b80e0c46-0175-4437-8b18-8f5826335761" config-ref="HTTP_Listener_config" path="/c1"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="c5e0873c-ac58-46e2-9e40-a5ce3ab051e1" />
+		<set-variable value="#[now() as String {format: 'HH:mm:ss'}]" doc:name="set StartTime" doc:id="c6832f0a-e1ac-4094-bcbd-0598b79e7c4b" variableName="startTime"/>
+		<set-variable value="#[attributes.queryParams.id]" doc:name="Set ID" doc:id="517ec99a-c15b-4ef9-a11f-40ce37eaa7ce" variableName="id"/>
+		<ee:cache doc:name="Cache" doc:id="f872b6ff-648c-44b9-9ad4-44fbcd1b701d" cachingStrategy-ref="Caching">
+			<set-payload value="#[now() as String {format: 'HH:mm:ss'}]" doc:name="Set Payload" doc:id="6dd116f1-e169-4359-ac9b-98dfb38761d6" />
+			<logger level="INFO" doc:name="Logger" doc:id="9363a6b9-e6a0-431b-a4cd-d8cb996af61c" message='#["Inside cache"]'/>
+		</ee:cache>
+		<set-payload value="#['Time:' ++ vars.startTime ++ ', Response:' ++ payload]" doc:name="Set Payload" doc:id="1e73bf11-7c23-4021-a99d-a0de4dcc36e7" />
+	</flow>
+</mule>
